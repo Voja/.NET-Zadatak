@@ -6,11 +6,22 @@
     <meta charset="utf-8" />
     <title>Employee Time Tracking</title>
     <style>
-        table {
-            width: 50%;
-            margin: 25px auto;
-            border-collapse: collapse;
+        body {
+            margin: 0;
+            padding: 0;
             font-family: 'Arial', sans-serif;
+        }
+
+        .container {
+            width: 60%;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            margin: 25px 0;
+            border-collapse: collapse;
             font-size: 16px;
             text-align: left;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
@@ -39,29 +50,130 @@
         .highlight {
             background-color: #ffcccc !important; /* Ensure the red highlight is applied */
         }
+
+        canvas {
+            display: block;
+            margin: 20px auto;
+            max-width: 100%;
+            height: auto;
+        }
+
+        #chartContainer {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+            button:hover {
+                background-color: #0056b3;
+            }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <h1>Zadatak .NET</h1>
-    <h2>a)</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Total Time Worked (hours)</th>
-                <th>Actions</th> <!-- Added Actions column -->
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var employee in Model)
-            {
-                <tr class="@(employee.TotalTimeWorked < 100 ? "highlight" : "")">
-                    <td>@employee.EmployeeName</td>
-                    <td>@employee.TotalTimeWorked hrs</td>
-                    <td><a href="#">Edit</a></td> <!-- Hyperlink that leads to nowhere -->
+    <div class="container">
+        <h1>Zadatak .NET</h1>
+        <h2>a)</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Total Time Worked (hours)</th>
+                    <th>Actions</th>
                 </tr>
+            </thead>
+            <tbody>
+                @foreach (var employee in Model)
+                {
+                    <tr class="@(employee.TotalTimeWorked < 100 ? "highlight" : "")">
+                        <td>@employee.EmployeeName</td>
+                        <td>@employee.TotalTimeWorked hrs</td>
+                        <td><a href="#">Edit</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <h2>b) Total Time Worked (Pie Chart)</h2>
+        <div id="chartContainer">
+            <canvas id="employeeChart" width="400" height="400"></canvas>
+        </div>
+        <button id="downloadBtn">Download PNG Image of Chart</button>
+    </div>
+
+    <script>
+        var ctx = document.getElementById('employeeChart').getContext('2d');
+        var employeeNames = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Select(e => e.EmployeeName).ToList()));
+        var totalTimeWorked = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Select(e => e.TotalTimeWorked).ToList()));
+
+        var chart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: employeeNames,
+                datasets: [{
+                    label: 'Total Time Worked (hours)',
+                    data: totalTimeWorked,
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)',
+                        'rgba(199, 199, 199, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)',
+                        'rgba(199, 199, 199, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (tooltipItem) {
+                                var total = totalTimeWorked.reduce((a, b) => a + b, 0);
+                                var percentage = ((tooltipItem.raw / total) * 100).toFixed(2) + '%';
+                                return tooltipItem.label + ': ' + tooltipItem.raw + ' hrs (' + percentage + ')';
+                            }
+                        }
+                    }
+                }
             }
-        </tbody>
-    </table>
+        });
+
+        document.getElementById('downloadBtn').addEventListener('click', function () {
+            var url = chart.toBase64Image();
+            var link = document.createElement('a');
+            link.href = url;
+            link.download = 'employee_time_tracking_report.png';
+            link.click();
+        });
+    </script>
 </body>
 </html>
