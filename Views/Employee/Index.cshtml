@@ -1,0 +1,67 @@
+﻿@model List<EmployeeTimeTracking.Models.Employee>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Employee Time Tracking</title>
+    <style>
+        table {
+            width: 50%;
+            margin: 25px auto;
+            border-collapse: collapse;
+            font-family: 'Arial', sans-serif;
+            font-size: 16px;
+            text-align: left;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #dddddd;
+        }
+
+        th {
+            background-color: #333;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f3f3f3;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .highlight {
+            background-color: #ffcccc !important; /* Ensure the red highlight is applied */
+        }
+    </style>
+</head>
+<body>
+    <h1>Zadatak .NET</h1>
+    <h2>a)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Total Time Worked (hours)</th>
+                <th>Actions</th> <!-- Added Actions column -->
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var employee in Model)
+            {
+                <tr class="@(employee.TotalTimeWorked < 100 ? "highlight" : "")">
+                    <td>@employee.EmployeeName</td>
+                    <td>@employee.TotalTimeWorked hrs</td>
+                    <td><a href="#">Edit</a></td> <!-- Hyperlink that leads to nowhere -->
+                </tr>
+            }
+        </tbody>
+    </table>
+</body>
+</html>
